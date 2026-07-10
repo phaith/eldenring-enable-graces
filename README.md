@@ -98,8 +98,29 @@ bitfield layout). Smithbox edits params through `Andre.Formats.Param`
 (`src/Andre/Andre.Formats/Param.cs`) — a faster, version-aware reimplementation
 whose write path works. The version-aware `ApplyParamdef(def, regulationVersion)`
 is essential: it filters fields by the regulation's own version so the row layout
-matches the data exactly. See
-See Smithbox's [libraries-and-dependencies doc](https://github.com/vawser/Smithbox/blob/main/docs/libraries-and-dependencies.md).
+matches the data exactly. See Smithbox's
+[libraries-and-dependencies doc](https://github.com/vawser/Smithbox/blob/main/docs/libraries-and-dependencies.md).
+
+## Updating the vendored libraries (`lib/`)
+
+`lib/` is a frozen snapshot of three projects from
+[Smithbox](https://github.com/vawser/Smithbox) (currently commit `9f3ad7d`):
+SoulsFormats, Andre.Formats, and Andre.Core. You'd only update it if SoulsFormats
+fixes a format bug or adds decryption for a newer game version.
+
+To refresh from a newer Smithbox:
+
+1. Clone [Smithbox](https://github.com/vawser/Smithbox) and note its commit.
+2. Copy its `src/Andre/SoulsFormats/SoulsFormats`, `src/Andre/Andre.Formats`, and
+   `src/Andre/Andre.Core` over the matching folders in `lib/`, keeping the
+   `lib/SoulsFormats/SoulsFormats` layout so the relative references still resolve.
+3. Strip the unused archive-decryption bits from `lib/Andre.Formats/`: delete
+   `bhd5_decrypt_rust.dll` and the `native/` folder, and remove the
+   `bhd5` / `CopyRustDllIfPresent` lines from `lib/Andre.Formats/Andre.Formats.csproj`.
+4. Remove any build artifacts:
+   `find lib -type d \( -name bin -o -name obj \) -prune -exec rm -rf {} +`
+5. `dotnet build -c Release`, then run `--selftest` and `--roundtrip` to confirm.
+6. Update the commit hash here and in **Project layout** above.
 
 ## Notes
 
