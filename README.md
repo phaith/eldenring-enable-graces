@@ -108,3 +108,21 @@ matches the data exactly. See
   regulation before relying on it.
 - Only Elden Ring is wired up (matches the project name). The same pattern works
   for Nightreign (`DecryptNRRegulation`/`EncryptNightreignRegulation`) or DS3.
+
+## License & Credits
+
+Copyright (C) 2026 Phath. Licensed under the **GNU General Public License v3.0** —
+see [LICENSE](LICENSE). GPL-3.0 is required because this project links
+**SoulsFormats** (GPL-3.0); derivatives must also be GPL-3.0 with source available.
+
+Built on top of the **[Smithbox](https://github.com/vawser/Smithbox)** codebase,
+which is the source of — and is credited for:
+
+- **SoulsFormats** ([JKAnderson/SoulsFormats](https://github.com/JKAnderson/SoulsFormats), GPL-3.0) —
+  reading/writing Elden Ring's `regulation.bin` and the `BonfireWarpParam` param.
+- **Andre.Formats** (Smithbox, MIT) — the version-aware `Param` read/write used here.
+- The `BonfireWarpParam.xml` PARAMDEF and English row-name `.json` in `Assets/`,
+  sourced from Smithbox's Elden Ring param metadata.
+
+Elden Ring is a trademark of FromSoftware, Inc. This tool is not affiliated with
+or endorsed by FromSoftware; use it only with legally-obtained game files.
