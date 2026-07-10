@@ -23,10 +23,9 @@ It's built on the same format libraries Smithbox uses (the locally-cloned
 
 ## Requirements
 
-- **.NET 10 SDK** (`net10.0-windows`). The app references Smithbox's in-tree
-  libraries (`../Smithbox/src/Andre/...`), which target `net10.0`.
-- This repo expects the [Smithbox](https://github.com/vawser/Smithbox) clone to
-  live as a sibling directory (`../Smithbox`).
+- **.NET 10 SDK** (`net10.0-windows`). That's it — the format libraries are
+  vendored under [`lib/`](lib) (from Smithbox, commit `9f3ad7d`), so this repo
+  builds standalone with no other checkout required.
 
 ## Build & run
 
@@ -54,7 +53,7 @@ dotnet run -c Release -- --roundtrip "C:\path\to\regulation.bin"
 
 ```
 eldenring-enable-graces/
-  eldenring-enable-graces.csproj   # WinForms net10.0; refs Smithbox SoulsFormats + Andre.Formats
+  eldenring-enable-graces.csproj   # WinForms net10.0
   Program.cs                       # entry + --selftest/--read/--roundtrip console modes
   MainForm.cs                      # browse + checkbox grid + enable/disable all + save
   RegulationReader.cs              # decrypt/encrypt regulation, read/write BonfireWarpParam
@@ -62,6 +61,10 @@ eldenring-enable-graces/
   Assets/
     BonfireWarpParam.xml           # PARAMDEF (from Smithbox's ER Defs)
     BonfireWarpParam.json          # English row names (from Smithbox's ER metadata)
+  lib/                             # vendored from Smithbox (commit 9f3ad7d); GPL/MIT
+    SoulsFormats/SoulsFormats/     # FromSoft format I/O (regulation.bin decrypt, PARAM/PARAMDEF)
+    Andre.Formats/                 # version-aware Param read/write
+    Andre.Core/                    # shared core (Game enum, logging, containers)
 ```
 
 ## How it works (the interesting bits)
@@ -96,7 +99,7 @@ bitfield layout). Smithbox edits params through `Andre.Formats.Param`
 whose write path works. The version-aware `ApplyParamdef(def, regulationVersion)`
 is essential: it filters fields by the regulation's own version so the row layout
 matches the data exactly. See
-[`../Smithbox/docs/libraries-and-dependencies.md`](../Smithbox/docs/libraries-and-dependencies.md).
+See Smithbox's [libraries-and-dependencies doc](https://github.com/vawser/Smithbox/blob/main/docs/libraries-and-dependencies.md).
 
 ## Notes
 

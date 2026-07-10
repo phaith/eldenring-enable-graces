@@ -21,17 +21,25 @@
     It targets net10.0, so this app must target net10.0(-windows) too.
   -->
   <ItemGroup>
-    <ProjectReference Include="..\Smithbox\src\Andre\SoulsFormats\SoulsFormats\Andre.SoulsFormats.csproj" />
-    <!-- Smithbox edits params via Andre.Formats.Param (a faster, version-aware
-         PARAM impl). Its Write path is what actually works for Elden Ring params;
-         raw SoulsFormats.PARAM.Write() throws on this paramdef. -->
-    <ProjectReference Include="..\Smithbox\src\Andre\Andre.Formats\Andre.Formats.csproj" />
+    <!-- Vendored from Smithbox (commit 9f3ad7d) so this repo builds standalone.
+         SoulsFormats (GPL-3.0) + Andre.Formats/Andre.Core (MIT). See README. -->
+    <ProjectReference Include="lib\SoulsFormats\SoulsFormats\Andre.SoulsFormats.csproj" />
+    <ProjectReference Include="lib\Andre.Formats\Andre.Formats.csproj" />
   </ItemGroup>
 
   <!-- Paramdef + English row names, shipped with the app. -->
   <ItemGroup>
     <EmbeddedResource Include="Assets\BonfireWarpParam.xml" />
     <EmbeddedResource Include="Assets\BonfireWarpParam.json" />
+  </ItemGroup>
+
+  <!-- The vendored libraries under lib/ build via their own .csproj files
+       (referenced above). Exclude them from this project's default ** glob so
+       they aren't compiled twice / without AllowUnsafeBlocks. -->
+  <ItemGroup>
+    <Compile Remove="lib\**" />
+    <None Remove="lib\**" />
+    <EmbeddedResource Remove="lib\**" />
   </ItemGroup>
 
 </Project>
