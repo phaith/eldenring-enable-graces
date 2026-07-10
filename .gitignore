@@ -25,6 +25,9 @@ deploy/
 [Bb]in[Rr]oot/
 publish/
 
+## Local release artifacts (built locally; published to GitHub Releases)
+eldenring-enable-graces-*.zip
+
 ## OS junk
 Thumbs.db
 ehthumbs.db
