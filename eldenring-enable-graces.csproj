@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>EldenRingEnableGraces</RootNamespace>
+    <AssemblyName>eldenring-enable-graces</AssemblyName>
+    <Version>0.1.0</Version>
+    <Title>Elden Ring — Enable Graces</Title>
+    <Description>A simple browser for Elden Ring's BonfireWarpParam (grace warp list).</Description>
+  </PropertyGroup>
+
+  <!--
+    SoulsFormats is referenced from the locally-cloned Smithbox knowledge base.
+    This fork (Smithbox's Andre.SoulsFormats) knows how to decrypt Elden Ring's
+    regulation.bin, including the latest SOTE DCP/deflate variant.
+    It targets net10.0, so this app must target net10.0(-windows) too.
+  -->
+  <ItemGroup>
+    <ProjectReference Include="..\Smithbox\src\Andre\SoulsFormats\SoulsFormats\Andre.SoulsFormats.csproj" />
+    <!-- Smithbox edits params via Andre.Formats.Param (a faster, version-aware
+         PARAM impl). Its Write path is what actually works for Elden Ring params;
+         raw SoulsFormats.PARAM.Write() throws on this paramdef. -->
+    <ProjectReference Include="..\Smithbox\src\Andre\Andre.Formats\Andre.Formats.csproj" />
+  </ItemGroup>
+
+  <!-- Paramdef + English row names, shipped with the app. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\BonfireWarpParam.xml" />
+    <EmbeddedResource Include="Assets\BonfireWarpParam.json" />
+  </ItemGroup>
+
+</Project>

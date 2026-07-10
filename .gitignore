@@ -1,0 +1,39 @@
+## .NET build output
+bin/
+obj/
+[Bb]uild/
+[Bb]uild[Bb]ot/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## Publish / self-contained deploy output
+deploy/
+[Bb]in[Rr]oot/
+publish/
+
+## OS junk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+## Local test artifacts
+## If you drop a regulation.bin into this folder to test, don't commit it.
+regulation.bin
+regulation.bin.*
+*.bak
+*.temp
