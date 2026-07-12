@@ -51,15 +51,21 @@ public class MainForm : Form
         var browse = new Button { Text = "Browse regulation.bin…", Dock = DockStyle.Left, Width = 150 };
         browse.Click += Browse_Click;
 
-        var enableAll = new Button { Text = "Enable all", Dock = DockStyle.Right, Width = 90 };
+        var enableAll = new Button { Text = "Enable all", Dock = DockStyle.Right, Width = 80 };
         enableAll.Click += (_, _) => SetAllEnabled(true);
 
-        var disableAll = new Button { Text = "Disable all", Dock = DockStyle.Right, Width = 90 };
+        var enableShown = new Button { Text = "Enable shown", Dock = DockStyle.Right, Width = 92 };
+        enableShown.Click += (_, _) => SetShownEnabled(true);
+
+        var disableShown = new Button { Text = "Disable shown", Dock = DockStyle.Right, Width = 100 };
+        disableShown.Click += (_, _) => SetShownEnabled(false);
+
+        var disableAll = new Button { Text = "Disable all", Dock = DockStyle.Right, Width = 85 };
         disableAll.Click += (_, _) => SetAllEnabled(false);
 
         _saveButton.Text = "Save";
         _saveButton.Dock = DockStyle.Right;
-        _saveButton.Width = 80;
+        _saveButton.Width = 70;
         _saveButton.Enabled = false;
         _saveButton.Click += Save_Click;
 
@@ -67,10 +73,12 @@ public class MainForm : Form
         _pathBox.Dock = DockStyle.Fill;
         _pathBox.ReadOnly = true;
 
-        // [Browse] [path fill] | [Enable all] [Disable all] [Save]
+        // [Browse] [path fill] | [Enable all] [Enable shown] [Disable shown] [Disable all] [Save]
         panel.Controls.Add(_pathBox);
         panel.Controls.Add(_saveButton);
         panel.Controls.Add(disableAll);
+        panel.Controls.Add(disableShown);
+        panel.Controls.Add(enableShown);
         panel.Controls.Add(enableAll);
         panel.Controls.Add(browse);
         Controls.Add(panel);
@@ -81,7 +89,7 @@ public class MainForm : Form
         var panel = new Panel { Dock = DockStyle.Top, Height = 30, Padding = new Padding(8, 2, 8, 4) };
         var label = new Label { Text = "Filter:", Dock = DockStyle.Left, AutoSize = true, TextAlign = ContentAlignment.MiddleLeft };
 
-        _filterBox.PlaceholderText = "type to filter by ID or name…";
+        _filterBox.PlaceholderText = "filter by name, or paste IDs (e.g. 100000, 100005, 101010)…";
         _filterBox.Dock = DockStyle.Fill;
         _filterBox.TextChanged += (_, _) => PopulateGrid();
 
@@ -317,23 +325,77 @@ public class MainForm : Form
         MarkDirty();
     }
 
+    private void SetShownEnabled(bool enabled)
+    {
+        if (_rows.Count == 0)
+            return;
+
+        string filterText = _filterBox.Text;
+        _bulk = true;
+        try
+        {
+            foreach (GraceRow gr in _rows)
+            {
+                if (!RowMatchesFilter(gr, filterText))
+                    continue;
+
+                gr.CurrentEventFlagId = enabled
+                    ? GraceRow.EnableEventFlagId
+                    : gr.OriginalEventFlagId;
+            }
+            PopulateGrid();
+        }
+        finally
+        {
+            _bulk = false;
+        }
+        MarkDirty();
+    }
+
+    private static readonly char[] FilterSeparators = { ',', ';', '\n', '\r', '\t', ' ' };
+
+    /// <summary>
+    /// A row matches when the filter is empty, or when it matches ANY token.
+    /// Digit tokens match the row ID exactly (so a pasted ID list is precise);
+    /// other tokens match the name as a case-insensitive substring.
+    /// </summary>
+    private static bool RowMatchesFilter(GraceRow gr, string filterText)
+    {
+        if (string.IsNullOrWhiteSpace(filterText))
+            return true;
+
+        string[] tokens = filterText.Split(FilterSeparators, StringSplitOptions.RemoveEmptyEntries);
+        if (tokens.Length == 0)
+            return true;
+
+        foreach (string tok in tokens)
+        {
+            if (int.TryParse(tok, out int id))
+            {
+                if (gr.Id == id)
+                    return true;
+            }
+            else if (gr.Name.Contains(tok, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ---- Grid population / filtering ----
 
     private void PopulateGrid()
     {
-        string q = _filterBox.Text.Trim();
+        string filterText = _filterBox.Text;
 
         _grid.SuspendLayout();
         _grid.Rows.Clear();
 
         foreach (GraceRow gr in _rows)
         {
-            if (!string.IsNullOrEmpty(q)
-                && !gr.Name.Contains(q, StringComparison.OrdinalIgnoreCase)
-                && !gr.Id.ToString().Contains(q, StringComparison.OrdinalIgnoreCase))
-            {
+            if (!RowMatchesFilter(gr, filterText))
                 continue;
-            }
 
             int newRowIndex = _grid.Rows.Add(
                 gr.IsEnabled,                       // Enabled (checkbox)
@@ -352,11 +414,14 @@ public class MainForm : Form
     private void UpdateStatus()
     {
         int enabledCount = _rows.Count(r => r.IsEnabled);
+        int shownCount = _grid.Rows.Count;
         string dirtyText = _dirty ? " • unsaved changes" : "";
-        _countLabel.Text = $"{enabledCount} of {_rows.Count} enabled";
+        string shownText = (shownCount > 0 && shownCount < _rows.Count)
+            ? $" · {shownCount} shown" : "";
+        _countLabel.Text = $"{enabledCount} of {_rows.Count} enabled{shownText}";
         _statusLabel.Text = _regulationPath is null
             ? "Ready. Pick an Elden Ring regulation.bin to begin."
-            : $"{enabledCount} of {_rows.Count} graces enabled{dirtyText}.";
+            : $"{enabledCount} of {_rows.Count} graces enabled{shownText}{dirtyText}.";
         _saveButton.Enabled = _regulationPath is not null && _rows.Count > 0;
     }
 
