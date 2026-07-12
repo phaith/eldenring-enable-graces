@@ -9,7 +9,7 @@ namespace EldenRingEnableGraces;
 
 /// <summary>
 /// Main window: pick an Elden Ring regulation.bin, then toggle a checkbox per
-/// grace to force-enable it (eventflagId → 71801) or restore its original flag.
+/// grace to force-enable it (eventflagId → the configured enable flag) or restore its original flag.
 /// Save writes the changes back into regulation.bin (with a .bak backup).
 /// </summary>
 public class MainForm : Form
@@ -28,6 +28,7 @@ public class MainForm : Form
 
     public MainForm()
     {
+        GraceRow.EnableEventFlagId = AppSettings.LoadEnableFlag();
         Text = "Elden Ring — Enable Graces";
         Width = 1000;
         Height = 660;
@@ -93,14 +94,34 @@ public class MainForm : Form
         _filterBox.Dock = DockStyle.Fill;
         _filterBox.TextChanged += (_, _) => PopulateGrid();
 
+        // Configurable force-enable flag (the eventflagId written when a grace is enabled).
+        var flagLabel = new Label { Text = "Enable flag:", Dock = DockStyle.Right, AutoSize = true, TextAlign = ContentAlignment.MiddleLeft };
+        var flagBox = new NumericUpDown
+        {
+            Dock = DockStyle.Right,
+            Width = 95,
+            Minimum = 0,
+            Maximum = uint.MaxValue,
+            Value = GraceRow.EnableEventFlagId,
+        };
+        flagBox.ValueChanged += (_, _) =>
+        {
+            GraceRow.EnableEventFlagId = (uint)flagBox.Value;
+            AppSettings.SaveEnableFlag(GraceRow.EnableEventFlagId);
+            PopulateGrid(); // re-evaluate "Enabled" against the new flag
+        };
+
         _countLabel.Text = "";
         _countLabel.Dock = DockStyle.Right;
         _countLabel.TextAlign = ContentAlignment.MiddleLeft;
-        _countLabel.Width = 240;
+        _countLabel.Width = 200;
 
-        panel.Controls.Add(_filterBox);
-        panel.Controls.Add(_countLabel);
-        panel.Controls.Add(label);
+        // [Filter:] [box fill] | [Enable flag:] [updown] [count]
+        panel.Controls.Add(_filterBox);   // fill
+        panel.Controls.Add(_countLabel);  // right (rightmost)
+        panel.Controls.Add(flagBox);      // right
+        panel.Controls.Add(flagLabel);    // right (leftmost of the right group)
+        panel.Controls.Add(label);        // left
         Controls.Add(panel);
     }
 

@@ -2,7 +2,7 @@
 
 A small **Windows Forms** app that reads Elden Ring's `regulation.bin`, lists
 every **`BonfireWarpParam`** row (every "Site of Grace" warp entry), and lets you
-**force-enable graces** by checking a box per row (sets `eventflagId → 71801`),
+**force-enable graces** by checking a box per row (sets `eventflagId → 76800`),
 then write the changes back — restoring any row's original flag by unchecking.
 
 It's built on the same format libraries Smithbox uses (the locally-cloned
@@ -13,7 +13,7 @@ It's built on the same format libraries Smithbox uses (the locally-cloned
 - **Browse regulation.bin** — pick the file directly and load it.
 - Grid of all graces with an **Enabled** checkbox, **ID**, **Name**,
   **Event Flag ID**, and **Original** (the value captured on first open).
-- **Check a row** → `eventflagId = 71801`. **Uncheck** → restored to its original.
+- **Check a row** → `eventflagId = 76800`. **Uncheck** → restored to its original.
 - **Enable all / Disable all** buttons.
 - **Save** writes changes back into `regulation.bin` (re-encrypted the way the
   game expects). A one-time **`regulation.bin.bak`** backup is created on first
@@ -44,7 +44,7 @@ dotnet run -c Release -- --selftest
 dotnet run -c Release -- --read "C:\path\to\regulation.bin"
 
 # Full round-trip on a COPY (never touches the original): enables a few rows,
-# saves, re-reads, and verifies enabled rows == 71801 while every other row is
+# saves, re-reads, and verifies enabled rows == 76800 while every other row is
 # unchanged. Prints RESULT: PASS/FAIL.
 dotnet run -c Release -- --roundtrip "C:\path\to\regulation.bin"
 ```
@@ -84,7 +84,7 @@ regulation.bin
 ```
   → one-time File.Copy → regulation.bin.bak
   → DecryptERRegulation → Andre.Formats.Param.Read → ApplyParamdef(version)
-  → flagCol.SetValue(row, 71801) for each enabled row
+  → flagCol.SetValue(row, 76800) for each enabled row
   → paramFile.Bytes = param.Write()
   → SFUtil.EncryptERRegulation(bnd, ZeroIv)  // zero IV, no DCX — form the game accepts
   → write .temp, then File.Move over the original
@@ -128,8 +128,10 @@ To refresh from a newer Smithbox:
   (recorded in the `.originals.json` sidecar). To compare against true vanilla,
   you'd load a Smithbox vanilla regulation instead — not needed for the
   check/uncheck toggle.
-- 71801 is the chosen "force-enable" flag. Verify the in-game effect with a test
-  regulation before relying on it.
+- The force-enable flag is **configurable** — set it in the UI ("Enable flag"
+  box; default `76800`, persisted to `settings.json` under
+  `%LocalAppData%\eldenring-enable-graces\`). Verify the in-game effect with a
+  test regulation before relying on whatever value you choose.
 - Only Elden Ring is wired up (matches the project name). The same pattern works
   for Nightreign (`DecryptNRRegulation`/`EncryptNightreignRegulation`) or DS3.
 

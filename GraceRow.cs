@@ -8,9 +8,10 @@ public class GraceRow
 {
     /// <summary>
     /// Event-flag value written when a grace is "force-enabled" by checking its
-    /// box. 71801 is the flag the user chose for this tool.
+    /// box. Configurable at runtime via the "Enable flag" box in the UI (persisted
+    /// to settings.json); defaults to 76800.
     /// </summary>
-    public const uint EnableEventFlagId = 71801;
+    public static uint EnableEventFlagId { get; set; } = 76800;
 
     /// <summary>Param row ID (e.g. 100000).</summary>
     public int Id { get; init; }
@@ -31,6 +32,6 @@ public class GraceRow
     /// </summary>
     public uint CurrentEventFlagId { get; set; }
 
-    /// <summary>True when this row is currently force-enabled (flag == 71801).</summary>
+    /// <summary>True when this row is currently force-enabled (Current == EnableEventFlagId).</summary>
     public bool IsEnabled => CurrentEventFlagId == EnableEventFlagId;
 }

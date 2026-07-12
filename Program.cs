@@ -80,7 +80,7 @@ internal static class Program
     /// <summary>
     /// Proves the full read → edit → encrypt → write → re-read round-trip on a
     /// COPY of the regulation (the original is never touched). Enables a handful
-    /// of rows, saves, re-reads, and verifies those rows are 71801 while every
+    /// of rows, saves, re-reads, and verifies those rows equal the configured enable flag while every
     /// other row kept its original flag.
     /// </summary>
     private static void RunRoundtrip(string regulationPath)
@@ -96,7 +96,7 @@ internal static class Program
             var rows = RegulationReader.ReadBonfireWarpParam(work).ToList();
             var originalFlags = rows.ToDictionary(r => r.Id, r => r.CurrentEventFlagId);
 
-            // Enable the first 5 rows whose flag isn't already 71801.
+            // Enable the first 5 rows whose flag isn't already the enable flag.
             var toEnable = rows
                 .Where(r => r.CurrentEventFlagId != GraceRow.EnableEventFlagId)
                 .Take(5)
@@ -119,7 +119,7 @@ internal static class Program
                 !toEnable.Contains(r.Id) && r.CurrentEventFlagId == originalFlags[r.Id]);
 
             Console.WriteLine();
-            Console.WriteLine($"  Rows enabled to 71801 and verified : {enabledOk}/{toEnable.Count}");
+            Console.WriteLine($"  Rows enabled to {GraceRow.EnableEventFlagId} and verified : {enabledOk}/{toEnable.Count}");
             Console.WriteLine($"  Untouched rows still at original   : {unchangedOk}/{rows2.Count - toEnable.Count}");
 
             bool pass = enabledOk == toEnable.Count && unchangedOk == rows2.Count - toEnable.Count;
