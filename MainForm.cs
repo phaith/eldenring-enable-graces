@@ -9,7 +9,7 @@ namespace EldenRingEnableGraces;
 
 /// <summary>
 /// Main window: pick an Elden Ring regulation.bin, then toggle a checkbox per
-/// grace to force-enable it (eventflagId → 76101) or restore its original flag.
+/// grace to force-enable it (eventflagId → 71801) or restore its original flag.
 /// Save writes the changes back into regulation.bin (with a .bak backup).
 /// </summary>
 public class MainForm : Form
