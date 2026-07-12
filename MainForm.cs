@@ -89,7 +89,7 @@ public class MainForm : Form
         var panel = new Panel { Dock = DockStyle.Top, Height = 30, Padding = new Padding(8, 2, 8, 4) };
         var label = new Label { Text = "Filter:", Dock = DockStyle.Left, AutoSize = true, TextAlign = ContentAlignment.MiddleLeft };
 
-        _filterBox.PlaceholderText = "filter by name, or paste IDs (e.g. 100000, 100005, 101010)…";
+        _filterBox.PlaceholderText = "name (multi-word ok), or paste IDs — 100000, 100005 / one per line…";
         _filterBox.Dock = DockStyle.Fill;
         _filterBox.TextChanged += (_, _) => PopulateGrid();
 
@@ -352,32 +352,52 @@ public class MainForm : Form
         MarkDirty();
     }
 
-    private static readonly char[] FilterSeparators = { ',', ';', '\n', '\r', '\t', ' ' };
+    private static readonly char[] LineSeparators = { '\n', '\r' };
+    private static readonly char[] IdSeparators = { ',', ';', ' ', '\t' };
 
     /// <summary>
-    /// A row matches when the filter is empty, or when it matches ANY token.
-    /// Digit tokens match the row ID exactly (so a pasted ID list is precise);
-    /// other tokens match the name as a case-insensitive substring.
+    /// A row matches when the filter is empty, or when ANY line matches. Each
+    /// line is classified by whether it contains a letter:
+    ///  - has letters  → a name phrase: substring match on the whole line
+    ///                   (spaces/commas preserved), e.g. "Margit, the Fell Omen".
+    ///  - no letters   → an ID list: split on comma/space/semicolon into exact
+    ///                   IDs, e.g. "100000, 100005 101010" or one per line.
+    /// This keeps pasted ID lists and multi-word/comma'd name searches from
+    /// colliding.
     /// </summary>
     private static bool RowMatchesFilter(GraceRow gr, string filterText)
     {
         if (string.IsNullOrWhiteSpace(filterText))
             return true;
 
-        string[] tokens = filterText.Split(FilterSeparators, StringSplitOptions.RemoveEmptyEntries);
-        if (tokens.Length == 0)
+        string[] lines = filterText.Split(LineSeparators, StringSplitOptions.RemoveEmptyEntries);
+        if (lines.Length == 0)
             return true;
 
-        foreach (string tok in tokens)
+        foreach (string rawLine in lines)
         {
-            if (int.TryParse(tok, out int id))
+            string line = rawLine.Trim();
+            if (line.Length == 0)
+                continue;
+
+            bool hasLetter = false;
+            foreach (char c in line)
             {
-                if (gr.Id == id)
+                if (char.IsLetter(c)) { hasLetter = true; break; }
+            }
+
+            if (hasLetter)
+            {
+                if (gr.Name.Contains(line, StringComparison.OrdinalIgnoreCase))
                     return true;
             }
-            else if (gr.Name.Contains(tok, StringComparison.OrdinalIgnoreCase))
+            else
             {
-                return true;
+                foreach (string tok in line.Split(IdSeparators, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (int.TryParse(tok, out int id) && gr.Id == id)
+                        return true;
+                }
             }
         }
         return false;
