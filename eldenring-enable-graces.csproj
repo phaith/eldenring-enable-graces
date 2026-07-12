@@ -9,7 +9,7 @@
     <LangVersion>latest</LangVersion>
     <RootNamespace>EldenRingEnableGraces</RootNamespace>
     <AssemblyName>eldenring-enable-graces</AssemblyName>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Title>Elden Ring — Enable Graces</Title>
     <Description>A simple browser for Elden Ring's BonfireWarpParam (grace warp list).</Description>
   </PropertyGroup>
